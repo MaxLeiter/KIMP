@@ -49,7 +49,7 @@ _:
     add hl, de
     ld e, l
     kld(hl, caretIcon)
-    ld b, 5
+    ld b, 3 ;caretIcon height
     pcall(putSpriteOR)
 
     pcall(fastCopy)
@@ -57,9 +57,9 @@ _:
     corelib(appWaitKey)
     jr nz, -_
     cp kUp
-    kcall(z, doUp)
+    kcall(z, navUp)
     cp kDown
-    kcall(z, doDown)
+    kcall(z, navDown)
     cp k2nd
     kcall(z, doSelect)
     cp kEnter
@@ -68,7 +68,7 @@ _:
     ret z
     jr -_
     ; Credits to SirCmpwn for basically the entire thing so far 
-doUp:
+navUp:
     kld(hl, item)
     ld a, (hl)
     or a
@@ -80,7 +80,7 @@ doUp:
     xor a
     ret
 #define NB_ITEM 3
-doDown:
+navDown:
     kld(hl, item)
     ld a, (hl)
     inc a
@@ -143,11 +143,9 @@ item:
     .db 0
 
 draw_table:
-	ld D, 0 ;x1
-	ld E, 20 ;y1
+	ld DE, 0x0020 ;x1
 
-	ld H, 30 ;x2
-	ld L, 20 ;y2
+	ld HL, 0x3020 ;x2
 	pcall(drawLine)
 	;figure out how to make a for loop to draw table
     ret
@@ -170,8 +168,7 @@ quitStr:
 size: ;Image size, will need to be configurable with new image screen at some point
 	.db 20
 caretIcon:
-    .db 0b10000000
-    .db 0b11000000
-    .db 0b11100000
-    .db 0b11000000
-    .db 0b10000000
+    .db 0b00000000
+    .db 0b00000000
+    .db 0b11111000
+    .db 0b00000000

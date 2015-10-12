@@ -1,11 +1,17 @@
 include .knightos/variables.make
 
-# This is a list of files that need to be added to the filesystem when installing your program
-ALL_TARGETS:=$(BIN)kimp
+ALL_TARGETS:=$(BIN)kimp $(APPS)kimp.app $(SHARE)icons/kimp.img
 
-# This is all the make targets to produce said files
-$(BIN)kimp: main.asm
+$(BIN)kimp: *.asm
 	mkdir -p $(BIN)
 	$(AS) $(ASFLAGS) --listing $(OUT)main.list main.asm $(BIN)kimp
+
+$(APPS)kimp.app: config/kimp.app
+	mkdir -p $(APPS)
+	cp config/kimp.app $(APPS)
+
+$(SHARE)icons/kimp.img: config/kimp.png
+	mkdir -p $(SHARE)icons
+	kimg -c config/kimp.png $(SHARE)icons/kimp.img
 
 include .knightos/sdk.make
