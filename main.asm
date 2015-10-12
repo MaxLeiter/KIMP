@@ -50,9 +50,9 @@ _:
     ld e, l
     kld(hl, caretIcon)
     ld b, 3 ;caretIcon height
-    pcall(putSpriteOR)
+    pcall(putSpriteOR) ;turn pixels on for caret
 
-    pcall(fastCopy)
+    pcall(fastCopy) ;load screen buffer
     pcall(flushKeys)
     corelib(appWaitKey)
     jr nz, -_
@@ -129,7 +129,6 @@ newImage:
     _:  pcall(fastCopy)
     pcall(flushKeys)
     corelib(appWaitKey)
-    jr nz, -_
     ret
 loadImage:
     rst 0x30
@@ -143,10 +142,49 @@ item:
     .db 0
 
 draw_table:
-	ld DE, 0x0020 ;x1
+.equ lower_x 0 
+.equ lower_y -1 
+.equ upper_x 0
+.equ upper_y 10
+.macro line(x1, y1, x2, y2)
+    ld hl, (x1 + upper_x) * 256 + (y1 + upper_y)
+    ld de, (x2 + upper_x) * 256 + (y2 + upper_y)
+    pcall(drawLine)
+.endmacro
+	;10x10
+    ;horizontal
+    line(0, 0, 95, 0)
+    line(0, 4, 95, 4)
+    line(0, 8, 95, 8)
+    line(0, 12, 95, 12)
+    line(0, 16, 95, 16)
+    line(0, 20, 95, 20)
+    line(0, 24, 95, 24)
+    line(0, 28, 95, 28)
+    line(0, 32, 95, 32)
+    line(0, 36, 95, 36)
+    line(0, 40, 95, 40)
 
-	ld HL, 0x3020 ;x2
-	pcall(drawLine)
+    ;vertical
+    line(24, 40, 24, 1)
+    line(28, 40, 28, 1)
+    line(32, 40, 32, 1)
+    line(28, 40, 28, 1)
+    line(32, 40, 32, 1)
+    line(36, 40, 36, 1)
+    line(40, 40, 40, 1)
+    line(44, 40, 44, 1)
+    line(48, 40, 48, 1)
+    line(52, 40, 52, 1)
+    line(56, 40, 56, 1)
+    line(60, 40, 60, 1)
+    line(64, 40, 64, 1)
+
+
+     ;TODO loop this; vertical
+	;ld DE, 0x0000 x1,y1
+	;ld HL, 0x0010 x2,y2
+	;pcall(drawLine)
 	;figure out how to make a for loop to draw table
     ret
 
@@ -167,8 +205,11 @@ quitStr:
 	.db "Exit", 0
 size: ;Image size, will need to be configurable with new image screen at some point
 	.db 20
-caretIcon:
+caretIcon: ;Just a line atm, maybe go back to the 'default' cursor?
     .db 0b00000000
     .db 0b00000000
     .db 0b11111000
     .db 0b00000000
+currrent:
+	.db 0
+	.db 1
