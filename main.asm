@@ -67,7 +67,7 @@ _:
     cp kMode
     ret z
     jr -_
-    
+    ; Credits to SirCmpwn for basically the entire thing so far 
 doUp:
     kld(hl, item)
     ld a, (hl)
@@ -109,10 +109,10 @@ doSelect:
 itemTable:
     .dw newImage, loadImage, exit
 
-newImage:
+newImage: 
     pcall(clearBuffer)
     
-    kld(hl, newImageTitle)
+    kld(hl, newImageTitle) ;TODO: be able to set this when creating a new image
     xor a
     corelib(drawWindow)
     
@@ -122,7 +122,7 @@ newImage:
     ; empty screen; lets make the grid
     kcall(draw_table)
 
-.draw:
+.draw: ; currently unused; will be loop function for generating grid
     ld b, 2
     inc d \ inc d \ inc d
     pcall(free)
@@ -143,7 +143,6 @@ item:
     .db 0
 
 draw_table:
-
 	ld D, 0 ;x1
 	ld E, 20 ;y1
 
@@ -157,7 +156,7 @@ draw_table:
 corelibPath:
     .db "/lib/core", 0
 windowTitle:
-    .db "KIMP", 0
+    .db "KIMP: Welcome", 0
 newImageTitle:
 	.db "KIMP: New Image", 0
 newImageStr:
@@ -168,7 +167,7 @@ backStr:
     .db "Back", 0
 quitStr:
 	.db "Exit", 0
-size:
+size: ;Image size, will need to be configurable with new image screen at some point
 	.db 20
 caretIcon:
     .db 0b10000000
