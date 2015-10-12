@@ -1,6 +1,8 @@
 # KIMP
 KnightOS Image Manipulation Program
 
+![KIMP](https://sr.ht/QSLM.png)
+
 Just a small project for me to mess around with for KnightOS. A basic grid-based pixel-art/sprite editor. General idea is the first screen has a 'name' field and a 'size' field (#x# like 30x30), and the program would be saved in a binary file (literal 1's and 0's).
 
 Example:
