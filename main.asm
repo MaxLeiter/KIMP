@@ -67,6 +67,7 @@ _:
     cp kMode
     ret z
     jr -_
+    ; Credits to SirCmpwn for basically the entire thing so far 
 navUp:
     kld(hl, item)
     ld a, (hl)
@@ -121,7 +122,14 @@ newImage:
     ; empty screen; lets make the grid
     kcall(draw_table)
 
-
+.draw: ; currently unused; will be loop function for generating grid
+    ld b, 2
+    inc d \ inc d \ inc d
+    pcall(free)
+    _:  pcall(fastCopy)
+    pcall(flushKeys)
+    corelib(appWaitKey)
+    ret
 loadImage:
     rst 0x30
     ret
