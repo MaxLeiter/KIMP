@@ -24,8 +24,8 @@ start:
     
 redraw:
     kld(hl, windowTitle)
+    ld a, 0b00000100
     corelib(drawWindow)
-    
     ld de, 0x2015 ; First items location
     kld(hl, newImageStr)
     ld b, 32 ; Amount to push other items
