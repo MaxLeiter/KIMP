@@ -97,20 +97,19 @@ draw_table:
 .endmacro
 	;10x10
     ;horizontal
-    line(24, 0, 64, 0)
-    line(24, 4, 64, 4)
-    line(24, 8, 64, 8)
-    line(24, 12, 64, 12)
-    line(24, 16, 64, 16)
-    line(24, 20, 64, 20)
-    line(24, 24, 64, 24)
-    line(24, 28, 64, 28)
-    line(24, 32, 64, 32)
-    line(24, 36, 64, 36)
-    line(24, 40, 64, 40)
+    line(28, 0, 68, 0)
+    line(28, 4, 68, 4)
+    line(28, 8, 68, 8)
+    line(28, 12, 68, 12)
+    line(28, 16, 68, 16)
+    line(28, 20, 68, 20)
+    line(28, 24, 68, 24)
+    line(28, 28, 68, 28)
+    line(28, 32, 68, 32)
+    line(28, 36, 68, 36)
+    line(28, 40, 68, 40)
 
     ;vertical
-    line(24, 40, 24, 1)
     line(28, 40, 28, 1)
     line(32, 40, 32, 1)
     line(28, 40, 28, 1)
@@ -123,6 +122,8 @@ draw_table:
     line(56, 40, 56, 1)
     line(60, 40, 60, 1)
     line(64, 40, 64, 1)
+    line(68, 40, 68, 1)
+
      ;TODO loop this
     ret
 ;Following below code credits to SirCmpwn with KnightOS/bed
