@@ -32,7 +32,6 @@ start:
     ld c, 40 ;width in pixels of menu
     corelib(showMenu)
     cp 0xFF
-    kjp(z, draw_loop)
     kld(hl, menu_functions)
     add a, l \ ld l, a \ jr nc, $+3 \ inc h
     ld e, (hl) \ inc hl \ ld d, (hl)
@@ -42,7 +41,7 @@ start:
         pcall(getEntryPoint)
     pop bc
     add hl, bc
-    kld((.menu_smc + 1), hl)
+    kld((.menu_smc + 1), hl) ;I have no idea what this does
 .menu_smc:
     jp 0
 newImage: 
@@ -74,9 +73,7 @@ loadImage: ;TODO: make this work
 exit:
     pop hl
     ret
-draw_loop:
-    pcall(flushKeys)
-    kcall(draw_table)
+
 main_loop:
     ;kcall(draw_selected) TODO: make cursor a thing
     pcall(fastCopy)
