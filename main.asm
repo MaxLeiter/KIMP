@@ -30,19 +30,19 @@ start:
 
 main_menu:
     kld(hl, menu); menu descriptors
-    ld c, 40 ;width in pixels of menu
+    ld c, 25 ;width in pixels of menu
     corelib(showMenu)
     cp 0xFF
+    kjp(z, draw_table)
+    add a, a
     kld(hl, menu_functions)
     add a, l \ ld l, a \ jr nc, $+3 \ inc h
     ld e, (hl) \ inc hl \ ld d, (hl)
+    pop hl
     ex de, hl
-    push hl
-        pcall(getCurrentThreadId)
-        pcall(getEntryPoint)
-    pop bc
+    kld(bc, 0)
     add hl, bc
-    kld((.menu_smc + 1), hl) ;I have no idea what this does
+    jp (hl)
 .menu_smc:
     jp 0
 newImage: 
@@ -79,7 +79,6 @@ main_loop:
     pcall(fastCopy)
     pcall(flushKeys)
     corelib(appWaitKey)
-    ld a, b
     cp kF3
     kjp(z, main_menu)
     or a
