@@ -1,3 +1,7 @@
+; KIMP: a KnightOS Image Editor
+; Basically a frankenstein of KnightOS projects,
+; thanks whoever made them (SirCmpwn, Willem3141, etc)
+
 #include "kernel.inc"
 #include "corelib.inc"
     .db "KEXC"
@@ -21,93 +25,7 @@ start:
     
     kld(de, corelibPath)
     pcall(loadLibrary)
-    
-redraw:
-    kld(hl, windowTitle)
-    ld a, 0b00000100
-    corelib(drawWindow)
-    ld de, 0x2015 ; First items location
-    kld(hl, newImageStr)
-    ld b, 32 ; Amount to push other items
-    pcall(drawStr)
-    
-    kld(hl, loadImageStr)
-    pcall(drawStr)
-    
-    kld(hl, quitStr)
-    pcall(drawStr)
-    
-    pcall(newline)
-_:
-    kld(hl, (item))
-    add hl, hl
-    ld b, h
-    ld c, l
-    add hl, hl
-    add hl, bc
-    ld de, 0x1915
-    add hl, de
-    ld e, l
-    kld(hl, caretIcon)
-    ld b, 3 ;caretIcon height
-    pcall(putSpriteOR) ;turn pixels on for caret
-
-    pcall(fastCopy) ;load screen buffer
-    pcall(flushKeys)
-    corelib(appWaitKey)
-    jr nz, -_
-    cp kUp
-    kcall(z, navUp)
-    cp kDown
-    kcall(z, navDown)
-    cp k2nd
-    kcall(z, doSelect)
-    cp kEnter
-    kcall(z, doSelect)
-    cp kMode
-    ret z
-    jr -_
-    ; Credits to SirCmpwn for basically the entire thing so far 
-navUp:
-    kld(hl, item)
-    ld a, (hl)
-    or a
-    ret z
-    dec a
-    ld (hl), a
-    kld(hl, caretIcon)
-    pcall(putSpriteXOR)
-    xor a
-    ret
-#define NB_ITEM 3
-navDown:
-    kld(hl, item)
-    ld a, (hl)
-    inc a
-    cp NB_ITEM
-    ret nc
-    ld (hl), a
-    kld(hl, caretIcon)
-    pcall(putSpriteXOR)
-    xor a
-    ret
-doSelect:
-    kld(hl, (item))
-    ld h, 0
-    kld(de, itemTable)
-    add hl, hl
-    add hl, de
-    ld e, (hl)
-    inc hl
-    ld d, (hl)
-    pcall(getCurrentThreadID)
-    pcall(getEntryPoint)
-    add hl, de
-    pop de \ kld(de, redraw) \ push de
-    jp (hl)
-    
-itemTable:
-    .dw newImage, loadImage, exit
+    kcall(newImage)
 
 newImage: 
     pcall(clearBuffer)
@@ -127,19 +45,16 @@ newImage:
     inc d \ inc d \ inc d
     pcall(free)
     _:  pcall(fastCopy)
-    pcall(flushKeys)
-    corelib(appWaitKey)
+
     ret
-loadImage:
+
+loadImage: ;TODO: make this work
     rst 0x30
     ret
-    
+
 exit:
     pop hl
     ret
-    
-item:
-    .db 0
 
 draw_table:
 .equ lower_x 0 
@@ -179,13 +94,7 @@ draw_table:
     line(56, 40, 56, 1)
     line(60, 40, 60, 1)
     line(64, 40, 64, 1)
-
-
-     ;TODO loop this; vertical
-	;ld DE, 0x0000 x1,y1
-	;ld HL, 0x0010 x2,y2
-	;pcall(drawLine)
-	;figure out how to make a for loop to draw table
+     ;TODO loop this
     ret
 
 
@@ -203,13 +112,34 @@ backStr:
     .db "Back", 0
 quitStr:
 	.db "Exit", 0
-size: ;Image size, will need to be configurable with new image screen at some point
+size: ;Image size, will need to be configurable with new image screen at some point, currently unused
 	.db 20
+item:
+    .db 0
 caretIcon: ;Just a line atm, maybe go back to the 'default' cursor?
     .db 0b00000000
     .db 0b00000000
     .db 0b11111000
     .db 0b00000000
-currrent:
-	.db 0
-	.db 1
+cursor_y:
+    .db 0
+cursor_x:
+    .db 0
+home_menu:
+    .db 3
+    .db "New", 0
+    .db "Open", 0
+    .db "Exit", 0
+drawing_menu:
+    .db 3
+    .db "Save", 0
+    .db "Open", 0
+    .db "Back", 0
+home_menu_functions:
+	.dw newImage
+	.dw loadImage
+	.dw exit
+drawing_menu_functions:
+	.dw loadImage ;TODO: saveImage
+	.dw loadImage 
+	.dw exit ;TODO: back
