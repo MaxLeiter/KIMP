@@ -30,9 +30,21 @@ start:
     jr z, .main_menu
 
 .main_menu:
-	kld(hl, home_menu); menu descriptors
+	kld(hl, menu); menu descriptors
     ld c, 40 ;width in pixels of menu
     corelib(showMenu)
+    kld(hl, menu_functions)
+    add a, l \ ld l, a \ jr nc, $+3 \ inc h
+    ld e, (hl) \ inc hl \ ld d, (hl)
+    ex de, hl
+    push hl
+        pcall(getCurrentThreadId)
+        pcall(getEntryPoint)
+    pop bc
+    add hl, bc
+    kld((.menu_smc + 1), hl)
+.menu_smc:
+    jp 0
 newImage: 
     pcall(clearBuffer)
     
@@ -132,21 +144,12 @@ cursor_y:
     .db 0
 cursor_x:
     .db 0
-home_menu:
+menu:
     .db 3
     .db "New", 0
     .db "Open", 0
     .db "Exit", 0
-drawing_menu:
-    .db 3
-    .db "Save", 0
-    .db "Open", 0
-    .db "Back", 0
-home_menu_functions:
+menu_functions:
 	.dw newImage
 	.dw loadImage
 	.dw exit
-drawing_menu_functions:
-	.dw loadImage ;TODO: saveImage
-	.dw loadImage 
-	.dw exit ;TODO: back
