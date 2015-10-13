@@ -71,8 +71,7 @@ loadImage: ;TODO: make this work
     ret
 
 exit:
-    pop hl
-    ret
+    pcall(exitThread)
 
 main_loop:
     ;kcall(draw_selected) TODO: make cursor a thing
@@ -81,10 +80,11 @@ main_loop:
     pcall(nz, flushKeys) ; Flush keys if we lost focus
     ld a, b
     cp kF3
-    kjp(z, .main_menu)
+    kjp(z, .main_menu) ;KCC thinks this is an Unknown Symbol
     or a
     pcall(nz, flushKeys)
     jr main_loop
+
 draw_table:
 .equ lower_x 0 
 .equ lower_y -1 
@@ -125,7 +125,52 @@ draw_table:
     line(64, 40, 64, 1)
      ;TODO loop this
     ret
+;Following below code credits to SirCmpwn with KnightOS/bed
+unload_current_file:
+    kld(hl, (file_name))
+    ld bc, 0
+    pcall(cpHLBC)
+    jr z, _
+    push hl \ pop ix
+    pcall(free)
+_:  kld(hl, (file_buffer))
+    pcall(cpHLBC)
+    ret z
+    push hl \ pop ix
+    pcall(free)
+    ret
 
+load_new_file:
+    kcall(unload_current_file)
+    ld hl, 0
+    kld((file_name), hl)
+    kld((file_length), hl)
+    kld((index), hl)
+    ld bc, 0x100
+    kld((file_buffer_length), bc)
+    ld a, 1
+    pcall(calloc)
+    kld((file_buffer), ix)
+    ret
+
+load_existing_file:
+    kld((file_name), de)
+    pcall(openFileRead)
+    pcall(getStreamInfo)
+    kld((file_length), bc)
+    ; TODO: Don't just edit files in memory
+    inc bc
+    kld((file_buffer_length), bc)
+    pcall(malloc)
+    pcall(streamReadToEnd)
+    push ix
+        add ix, bc
+        ld (ix + -1), 0 ; Delimiter
+    pop ix
+    kld((file_buffer), ix)
+    ld hl, 0
+    kld((index), hl)
+    ret
 
 corelibPath:
     .db "/lib/core", 0
@@ -163,3 +208,13 @@ menu_functions:
 	.dw newImage
 	.dw loadImage
 	.dw exit
+file_buffer:
+    .dw 0
+file_buffer_length:
+    .dw 0
+file_name:
+    .dw 0
+file_length:
+    .dw 0
+index:
+    .dw 0
