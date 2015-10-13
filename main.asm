@@ -26,14 +26,20 @@ start:
     kld(de, corelibPath)
     pcall(loadLibrary)
     kcall(newImage)
+    cp kF3
+    jr z, .main_menu
 
+.main_menu:
+	kld(hl, home_menu); menu descriptors
+    ld c, 40 ;width in pixels of menu
+    corelib(showMenu)
 newImage: 
     pcall(clearBuffer)
     
     kld(hl, newImageTitle) ;TODO: be able to set this when creating a new image
     ld a, 0b00000100
     corelib(drawWindow)
-    
+
     ld de, 0x0208
     ld b, 2
 
@@ -45,7 +51,8 @@ newImage:
     inc d \ inc d \ inc d
     pcall(free)
     _:  pcall(fastCopy)
-
+    pcall(flushKeys)
+    corelib(appWaitKey)
     ret
 
 loadImage: ;TODO: make this work
