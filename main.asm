@@ -27,8 +27,8 @@ start:
     pcall(loadLibrary)
     kcall(newImage)
 
-.main_menu:
-	kld(hl, menu); menu descriptors
+main_menu:
+    kld(hl, menu); menu descriptors
     ld c, 40 ;width in pixels of menu
     corelib(showMenu)
     cp 0xFF
@@ -80,7 +80,7 @@ main_loop:
     pcall(nz, flushKeys) ; Flush keys if we lost focus
     ld a, b
     cp kF3
-    kjp(z, .main_menu) ;KCC thinks this is an Unknown Symbol
+    kjp(z, main_menu) ;KCC thinks this is an Unknown Symbol
     or a
     pcall(nz, flushKeys)
     jr main_loop
