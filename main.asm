@@ -26,13 +26,13 @@ start:
     kld(de, corelibPath)
     pcall(loadLibrary)
     kcall(newImage)
-    cp kF3
-    jr z, .main_menu
 
 .main_menu:
 	kld(hl, menu); menu descriptors
     ld c, 40 ;width in pixels of menu
     corelib(showMenu)
+    cp 0xFF
+    kjp(z, draw_loop)
     kld(hl, menu_functions)
     add a, l \ ld l, a \ jr nc, $+3 \ inc h
     ld e, (hl) \ inc hl \ ld d, (hl)
@@ -74,7 +74,20 @@ loadImage: ;TODO: make this work
 exit:
     pop hl
     ret
-
+draw_loop:
+    pcall(flushKeys)
+    kcall(draw_table)
+main_loop:
+    ;kcall(draw_selected) TODO: make cursor a thing
+    pcall(fastCopy)
+    corelib(getCharacterInput)
+    pcall(nz, flushKeys) ; Flush keys if we lost focus
+    ld a, b
+    cp kF3
+    kjp(z, .main_menu)
+    or a
+    pcall(nz, flushKeys)
+    jr main_loop
 draw_table:
 .equ lower_x 0 
 .equ lower_y -1 
