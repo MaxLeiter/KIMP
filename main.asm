@@ -22,7 +22,8 @@ start:
     pcall(getKeypadLock)
 
     pcall(allocScreenBuffer)
-    
+    pcall(clearBuffer)
+
     kld(de, corelibPath)
     pcall(loadLibrary)
     kcall(newImage)
@@ -74,17 +75,16 @@ exit:
     pcall(exitThread)
 
 main_loop:
-    ;kcall(draw_selected) TODO: make cursor a thing
+    kcall(draw_table)
     pcall(fastCopy)
-    corelib(getCharacterInput)
-    pcall(nz, flushKeys) ; Flush keys if we lost focus
+    pcall(flushKeys)
+    corelib(appWaitKey)
     ld a, b
     cp kF3
-    kjp(z, main_menu) ;KCC thinks this is an Unknown Symbol
+    kjp(z, main_menu)
     or a
     pcall(nz, flushKeys)
     jr main_loop
-
 draw_table:
 .equ lower_x 0 
 .equ lower_y -1 
