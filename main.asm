@@ -113,7 +113,7 @@ newImage:
     pcall(clearBuffer)
     
     kld(hl, newImageTitle) ;TODO: be able to set this when creating a new image
-    xor a
+    ld a, 0b00000100
     corelib(drawWindow)
     
     ld de, 0x0208
