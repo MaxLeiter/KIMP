@@ -82,7 +82,6 @@ main_loop:
     cp kF3
     kjp(z, main_menu)
     or a
-    pcall(nz, flushKeys)
     jr main_loop
 draw_table:
 .equ lower_x 0 
