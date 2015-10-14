@@ -26,14 +26,53 @@ start:
 
     kld(de, corelibPath)
     pcall(loadLibrary)
-    kcall(newImage)
+    kcall(draw_ui)
+
+
+new_image: 
+    kcall(draw_ui)
+    
+    ; empty screen; lets make the grid
+.key_loop: 
+    pcall(fastCopy)
+    pcall(flushKeys)
+    corelib(appWaitKey) ; loads `a` with the pressed key
+    
+    cp kMODE
+    ret z
+    
+    cp kF3
+    jr z, main_menu
+    
+    cp kRight
+    jr z, .right
+    
+    jr .key_loop
+
+.right:
+    kld(a, (current))
+    inc a
+    cp (cursorPos_end - cursorPos) / 2 + 1
+    jr z, main_loop
+    kld((current), a)
+    jr main_loop
+
+    
+load_image: ;TODO: make this work
+    ret
+
+exit:
+    pcall(killCurrentThread)
+
+main_loop:
+    kcall(draw_ui)
 
 main_menu:
     kld(hl, menu); menu descriptors
     ld c, 25 ;width in pixels of menu
     corelib(showMenu)
     cp 0xFF
-    kjp(z, draw_table)
+    kjp(z, draw_ui)
     add a, a ;2a
     kld(hl, menu_functions)
     add a, l \ ld l, a \ jr nc, $+3 \ inc h
@@ -44,42 +83,67 @@ main_menu:
     add hl, bc
     jp (hl)
     ret
+
 .menu_smc:
     jp 0
-newImage: 
+draw_ui:
     pcall(clearBuffer)
-    
-    kld(hl, newImageTitle) ;TODO: be able to set this when creating a new image
+    xor a
+    kld(hl, newImageTitle) 
     ld a, 0b00000100
     corelib(drawWindow)
-
-    ld de, 0x0208
-    ld b, 2
-
-    ; empty screen; lets make the grid
-    kcall(draw_table)
-
-.key_loop: 
     pcall(fastCopy)
-    pcall(flushKeys)
-    corelib(appWaitKey) ; loads `a` with the pressed key
-    cp kF3
-    jr z, main_menu
-    jr .key_loop
+    kcall(draw_grid)
+    kjp(z, xor_selector)
 
-loadImage: ;TODO: make this work
-    rst 0x30
+
+xor_selector: ;credits to KnightOS/periodic
+    push hl
+        kld(a, (current)) \ dec a
+        kld(hl, CursorPos)
+        add a, a \ add a, l \ ld l, a
+        jr nc, $+3 \ inc h
+        ld b, (hl) \ inc hl \ ld c, (hl)
+        ld a, b
+        kld((.vertical_loop + 1), a) ; SMC
+    pop hl
+    kcall(.vertical_loop)
+    dec c
+    kcall(.vertical_loop)
+    dec c
+; Displays 4 pixels vertically
+.vertical_loop:
+    ld a, 0 ; SMC
+    ld b, 29 ; cursors initial x
+    ld a, 3 ;width of cursor
+.loop:
+    kcall(_IPoint)
+    inc b
+    dec a
+    jr nz, .loop
     ret
 
-exit:
-    pcall(killCurrentThread)
 
-main_loop:
-    kcall(draw_table)
-    pcall(fastCopy)
+_IPoint:
+    ; Cannot destroy anything
+    push af
+    push hl
+        ld l, c ; Y
+        ld a, l 
+        sub a, 33 
+        neg 
+        add a, 33 
+        ld l, a
+        
+        ld a, b ; X
+        
+        pcall(invertPixel) ; input: A,L (X, Y)
+    pop hl
+    pop af
+    ret
+    
+draw_grid: 
 
-    jr main_loop
-draw_table:
 .equ lower_x 0 
 .equ lower_y -1 
 .equ upper_x 0
@@ -120,6 +184,7 @@ draw_table:
 
      ;TODO loop this
     ret
+
 ;Following below code credits to SirCmpwn with KnightOS/bed
 unload_current_file:
     kld(hl, (file_name))
@@ -200,8 +265,8 @@ menu:
     .db "Open", 0
     .db "Exit", 0
 menu_functions:
-	.dw newImage
-	.dw loadImage
+	.dw new_image
+	.dw load_image
 	.dw exit
 file_buffer:
     .dw 0
@@ -213,3 +278,10 @@ file_length:
     .dw 0
 index:
     .dw 0
+current:
+    .dw 1
+cursorPos: ;Really shouldn't hardcode this...
+    .db 45, 55  ; H
+
+cursorPos_end:
+    .db 0
