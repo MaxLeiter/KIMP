@@ -34,7 +34,7 @@ main_menu:
     corelib(showMenu)
     cp 0xFF
     kjp(z, draw_table)
-    add a, a
+    add a, a ;2a
     kld(hl, menu_functions)
     add a, l \ ld l, a \ jr nc, $+3 \ inc h
     ld e, (hl) \ inc hl \ ld d, (hl)
@@ -43,6 +43,7 @@ main_menu:
     kld(bc, 0)
     add hl, bc
     jp (hl)
+    ret
 .menu_smc:
     jp 0
 newImage: 
@@ -58,14 +59,13 @@ newImage:
     ; empty screen; lets make the grid
     kcall(draw_table)
 
-.draw: ; currently unused; will be loop function for generating grid
-    ld b, 2
-    inc d \ inc d \ inc d
-    pcall(free)
-    _:  pcall(fastCopy)
+.key_loop: 
+    pcall(fastCopy)
     pcall(flushKeys)
-    corelib(appWaitKey)
-    ret
+    corelib(appWaitKey) ; loads `a` with the pressed key
+    cp kF3
+    jr z, main_menu
+    jr .key_loop
 
 loadImage: ;TODO: make this work
     rst 0x30
@@ -77,11 +77,7 @@ exit:
 main_loop:
     kcall(draw_table)
     pcall(fastCopy)
-    pcall(flushKeys)
-    corelib(appWaitKey)
-    cp kF3
-    kjp(z, main_menu)
-    or a
+
     jr main_loop
 draw_table:
 .equ lower_x 0 
@@ -93,7 +89,7 @@ draw_table:
     ld de, (x2 + upper_x) * 256 + (y2 + upper_y)
     pcall(drawLine)
 .endmacro
-	;10x10
+    ;10x10
     ;horizontal
     line(28, 0, 68, 0)
     line(28, 4, 68, 4)
