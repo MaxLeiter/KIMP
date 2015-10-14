@@ -72,7 +72,7 @@ loadImage: ;TODO: make this work
     ret
 
 exit:
-    pcall(exitThread)
+    pcall(killCurrentThread)
 
 main_loop:
     kcall(draw_table)
