@@ -50,26 +50,93 @@ main_loop:
     cp kF3
     kjp(z, .main_menu)
     
-    cp kUp
-    jr z, .up
+    cp kLeft
+    jr z, .left
+    cp kRight
+    jr z, .right
     cp kDown
     jr z, .down
+    cp kUp
+    jr z, .up
       
     jr .key_loop
-.up:
+.left:
     kld(a, (current))
     dec a
     jr z, main_loop
     kld((current), a)
     jr main_loop
 
-.down:
+.right:
     kld(a, (current))
     inc a
     cp (cursorPos_end - cursorPos) / 2 + 1
     jr z, main_loop
     kld((current), a)
     jr main_loop
+
+.down:
+    ; Searches the cursor list for the next one with the same X value
+    kld(a, (current))
+    dec a
+    kld(hl, CursorPos)
+    ld d, a ; New "current" value
+    push af
+        add a, a
+        add a, l \ ld l, a \ jr nc, $+3 \ inc h
+        ld b, (hl) ; Current X position
+        inc hl \ inc hl
+.down_loop:
+        inc d
+        ld a, (hl)
+        or a
+        jr z, .down_restore
+        cp b
+        ld a, d
+        jr z, .down_save
+        inc hl \ inc hl
+        jr .down_loop
+.down_restore:
+    pop af
+    inc a
+    kld((current), a)
+    jr main_loop
+.down_save:
+    inc sp \ inc sp
+    inc a
+    kld((current), a)
+    jr main_loop
+.up:
+    ; Searches the cursor list for the next one with the same X value
+    kld(a, (current))
+    dec a
+    kld(hl, CursorPos)
+    ld d, a ; New "current" value
+    push af
+        add a, a
+        add a, l \ ld l, a \ jr nc, $+3 \ inc h
+        ld b, (hl) ; Current X position
+        dec hl \ dec hl
+.up_loop:
+        dec d
+        ld a, (hl)
+        or a
+        jr z, .up_restore
+        cp b
+        ld a, d
+        jr z, .up_save
+        dec hl \ dec hl
+        jr .up_loop
+.up_restore:
+    pop af
+    inc a
+    kld((current), a)
+    kjp(main_loop)
+.up_save:
+    inc sp \ inc sp
+    inc a
+    kld((current), a)
+    kjp(main_loop)
 
 .main_menu:
     kld(hl, menu); menu descriptors
@@ -121,7 +188,7 @@ xor_selector: ;credits to KnightOS/periodic
 ; Displays 4 pixels vertically
 .vertical_loop:
     ld a, 0 ; SMC
-    ld b, 29 ; cursors initial x
+    ld b, a ; cursors initial x
     ld a, 3 ;width of cursor
 .loop:
     kcall(_IPoint)
@@ -239,66 +306,4 @@ load_existing_file:
     kld((index), hl)
     ret
 
-corelibPath:
-    .db "/lib/core", 0
-windowTitle:
-    .db "KIMP: Welcome", 0
-newImageTitle:
-	.db "KIMP: New Image", 0
-newImageStr:
-    .db "New Image\n", 0
-loadImageStr:
-    .db "Load Image\n", 0
-backStr:
-    .db "Back", 0
-quitStr:
-	.db "Exit", 0
-size: ;Image size, will need to be configurable with new image screen at some point, currently unused
-	.db 20
-item:
-    .db 0
-caretIcon: ;Just a line atm, maybe go back to the 'default' cursor?
-    .db 0b00000000
-    .db 0b00000000
-    .db 0b11111000
-    .db 0b00000000
-cursor_y:
-    .db 0
-cursor_x:
-    .db 0
-menu:
-    .db 3
-    .db "New", 0
-    .db "Open", 0
-    .db "Exit", 0
-menu_functions:
-    .dw new_image
-    .dw load_image
-    .dw exit
-file_buffer:
-    .dw 0
-file_buffer_length:
-    .dw 0
-file_name:
-    .dw 0
-file_length:
-    .dw 0
-index:
-    .dw 0
-current:
-    .dw 1
-cursorPos: ;Really shouldn't hardcode this...
-    ;y
-    .db 45, 55  ; H
-    .db 45, 51  ; H
-    .db 45, 47  ; H
-    .db 45, 43  ; H
-    .db 45, 39  ; H
-    .db 45, 35  ; H
-    .db 45, 31  ; H
-    .db 45, 27  ; H
-    .db 45, 23  ; H
-    .db 45, 19  ; H
-
-cursorPos_end:
-    .db 0
+    #include "constants.asm"
