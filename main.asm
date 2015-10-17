@@ -29,9 +29,15 @@ start:
     kcall(draw_ui)
 
 
+    
+
 new_image: 
     kcall(draw_ui)
     
+    
+main_loop:
+    kcall(draw_ui)
+
     ; empty screen; lets make the grid
 .key_loop: 
     pcall(fastCopy)
@@ -42,14 +48,22 @@ new_image:
     ret z
     
     cp kF3
-    jr z, main_menu
+    kjp(z, .main_menu)
     
-    cp kRight
-    jr z, .right
-    
+    cp kUp
+    jr z, .up
+    cp kDown
+    jr z, .down
+      
     jr .key_loop
+.up:
+    kld(a, (current))
+    dec a
+    jr z, main_loop
+    kld((current), a)
+    jr main_loop
 
-.right:
+.down:
     kld(a, (current))
     inc a
     cp (cursorPos_end - cursorPos) / 2 + 1
@@ -57,23 +71,12 @@ new_image:
     kld((current), a)
     jr main_loop
 
-    
-load_image: ;TODO: make this work
-    ret
-
-exit:
-    pcall(killCurrentThread)
-
-main_loop:
-    kcall(draw_ui)
-
-main_menu:
+.main_menu:
     kld(hl, menu); menu descriptors
-    ld c, 25 ;width in pixels of menu
+    ld c, 40 ;width in pixels of menu
     corelib(showMenu)
     cp 0xFF
     kjp(z, draw_ui)
-    add a, a ;2a
     kld(hl, menu_functions)
     add a, l \ ld l, a \ jr nc, $+3 \ inc h
     ld e, (hl) \ inc hl \ ld d, (hl)
@@ -84,8 +87,12 @@ main_menu:
     jp (hl)
     ret
 
-.menu_smc:
-    jp 0
+load_image: ;TODO: make this work
+    ret
+
+exit:
+    pcall(killCurrentThread)
+
 draw_ui:
     pcall(clearBuffer)
     xor a
@@ -265,9 +272,9 @@ menu:
     .db "Open", 0
     .db "Exit", 0
 menu_functions:
-	.dw new_image
-	.dw load_image
-	.dw exit
+    .dw new_image
+    .dw load_image
+    .dw exit
 file_buffer:
     .dw 0
 file_buffer_length:
@@ -281,7 +288,17 @@ index:
 current:
     .dw 1
 cursorPos: ;Really shouldn't hardcode this...
+    ;y
     .db 45, 55  ; H
+    .db 45, 51  ; H
+    .db 45, 47  ; H
+    .db 45, 43  ; H
+    .db 45, 39  ; H
+    .db 45, 35  ; H
+    .db 45, 31  ; H
+    .db 45, 27  ; H
+    .db 45, 23  ; H
+    .db 45, 19  ; H
 
 cursorPos_end:
     .db 0
