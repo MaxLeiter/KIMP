@@ -1,7 +1,7 @@
 # KIMP
 KnightOS Image Manipulation Program
 
-![KIMP](https://sr.ht/KkJs.png)
+![KIMP](http://i.imgur.com/t0T8kUf.gif)
 
 
 ##Info
