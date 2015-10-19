@@ -1,6 +1,7 @@
 ; KIMP: a KnightOS Image Editor
 ; Basically a frankenstein of KnightOS projects,
 ; thanks whoever made them (SirCmpwn, Willem3141, etc)
+; By MaxLeiter <mleiter18@priorypanther.com>
 
 #include "kernel.inc"
 #include "corelib.inc"
